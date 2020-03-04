@@ -1,4 +1,4 @@
-## Balance transfer
+## Multichannel Hyperledegr Fabric
 
 A sample Node.js app to demonstrate **__fabric-client__** & **__fabric-ca-client__** Node.js SDK APIs
 
@@ -10,19 +10,37 @@ A sample Node.js app to demonstrate **__fabric-client__** & **__fabric-ca-client
 * **Node.js** v8.4.0 or higher
 * [Download Docker images](http://hyperledger-fabric.readthedocs.io/en/latest/samples.html#binaries)
 
-```
-cd fabric-samples/balance-transfer/
-```
+Steps for multichannel
 
-Once you have completed the above setup, you will have provisioned a local network with the following docker container configuration:
+present working directory should be where configtx.yaml present
 
-* 2 CAs
-* A SOLO orderer
-* 4 peers (2 peers per Org)
+../../../bin/configtxgen -profile TwoOrgsOrdererGenesis -channelID byfn-sys-channel -outputBlock ./genesis.block
 
-#### Artifacts
-* Crypto material has been generated using the **cryptogen** tool from Hyperledger Fabric and mounted to all peers, the orderering node and CA containers. More details regarding the cryptogen tool are available [here](http://hyperledger-fabric.readthedocs.io/en/latest/build_network.html#crypto-generator).
-* An Orderer genesis block (genesis.block) and channel configuration transaction (mychannel.tx) has been pre generated using the **configtxgen** tool from Hyperledger Fabric and placed within the artifacts folder. More details regarding the configtxgen tool are available [here](http://hyperledger-fabric.readthedocs.io/en/latest/build_network.html#configuration-transaction-generator).
+export FABRIC_CFG_PATH=$PWD
+export CHANNEL_ONE_NAME=channelall
+export CHANNEL_ONE_PROFILE=ChannelAll
+export CHANNEL_TWO_NAME=channel12
+export CHANNEL_TWO_PROFILE=Channel12
+
+For channel1
+../../../bin/configtxgen -profile ${CHANNEL_ONE_PROFILE} -outputCreateChannelTx ./${CHANNEL_ONE_NAME}.tx -channelID $CHANNEL_ONE_NAME
+../../../bin/configtxgen -profile ${CHANNEL_TWO_PROFILE} -outputCreateChannelTx ./${CHANNEL_TWO_NAME}.tx -channelID $CHANNEL_TWO_NAME
+../../../bin/configtxgen -profile ${CHANNEL_ONE_PROFILE} -outputAnchorPeersUpdate ./Org1MSPanchors_${CHANNEL_ONE_NAME}.tx -channelID $CHANNEL_ONE_NAME -asOrg Org1MSP
+../../../bin/configtxgen -profile ${CHANNEL_ONE_PROFILE} -outputAnchorPeersUpdate ./Org2MSPanchors_${CHANNEL_ONE_NAME}.tx -channelID $CHANNEL_ONE_NAME -asOrg Org2MSP
+../../../bin/configtxgen -profile ${CHANNEL_ONE_PROFILE} -outputAnchorPeersUpdate ./Org3MSPanchors_${CHANNEL_ONE_NAME}.tx -channelID $CHANNEL_ONE_NAME -asOrg Org3MSP
+
+For channel2
+
+../../../bin/configtxgen -profile ${CHANNEL_TWO_PROFILE} -outputAnchorPeersUpdate ./Org1MSPanchors_${CHANNEL_TWO_NAME}.tx -channelID $CHANNEL_TWO_NAME -asOrg Org1MSP
+../../../bin/configtxgen -profile ${CHANNEL_TWO_PROFILE} -outputAnchorPeersUpdate ./Org2MSPanchors_${CHANNEL_TWO_NAME}.tx -channelID $CHANNEL_TWO_NAME -asOrg Org2MSP
+
+
+../../../bin/configtxgen -profile TwoOrgsChannel -outputAnchorPeersUpdate Org1MSPanchors.tx -channelID mychannel -asOrg Org1MSP
+../../../bin/configtxgen -profile TwoOrgsChannel -outputAnchorPeersUpdate Org2MSPanchors.tx -channelID mychannel -asOrg Org2MSP
+../../../bin/configtxgen -profile TwoOrgsChannel -outputAnchorPeersUpdate Org3MSPanchors.tx -channelID mychannel -asOrg Org3MSP
+
+
+
 
 ## Running the sample program
 
